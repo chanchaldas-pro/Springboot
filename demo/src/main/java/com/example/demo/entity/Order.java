@@ -33,9 +33,9 @@ public class Order {
     @Min(0)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
-    /**
-     * Recalculate total amount from items
-     */
+    // -----------------------------------------------------
+    // BUSINESS LOGIC
+    // -----------------------------------------------------
     public void recomputeTotal() {
         if (items == null) return;
 
@@ -44,12 +44,66 @@ public class Order {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    /**
-     * Prevent modifying items after payment success
-     */
     public boolean isLocked() {
         return status == OrderStatus.COMPLETED || status == OrderStatus.PROCESSING;
     }
 
-    // Getters & Setters
+    // -----------------------------------------------------
+    // GETTERS & SETTERS
+    // -----------------------------------------------------
+
+    public Long getId() {
+        return id;
+    }
+
+    public UUID getInternalId() {
+        return internalId;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public LocalDateTime getOrderDate() {
+        return orderDate;
+    }
+
+    public void setOrderDate(LocalDateTime orderDate) {
+        this.orderDate = orderDate;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public List<OrderItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+
+        // maintain relationship
+        if (items != null) {
+            for (OrderItem item : items) {
+                item.setOrder(this);
+            }
+        }
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
 }

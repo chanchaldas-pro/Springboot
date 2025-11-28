@@ -1,4 +1,4 @@
-package com.yourapp.repository;
+package com.example.demo.repository;
 
 import com.example.demo.entity.Payment;
 import com.example.demo.entity.PaymentStatus;
