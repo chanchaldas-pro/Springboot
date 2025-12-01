@@ -3,8 +3,6 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "customers")
@@ -14,20 +12,46 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, updatable = false)
-    private UUID internalId = UUID.randomUUID();
-
     @NotBlank
-    private String fullName;
+    private String name;
 
     @Email
-    @Column(unique = true)
     private String email;
 
+    @NotBlank
     private String phone;
+    @Enumerated(EnumType.STRING)
+    private CustomerRole  customerRole = CustomerRole.USER;
 
-    @OneToMany(mappedBy = "customer")
-    private List<Order> orders;
+    // -------------------------
+    //    GETTERS & SETTERS
+    // -------------------------
 
-    // Getters & Setters
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 }
