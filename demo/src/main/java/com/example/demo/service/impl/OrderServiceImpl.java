@@ -6,6 +6,7 @@ import com.example.demo.repository.*;
 import com.example.demo.service.OrderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 import java.util.stream.Collectors;
 
@@ -78,6 +79,15 @@ public class OrderServiceImpl implements OrderService {
 
         return convertToResponse(order);
     }
+
+    @Override
+    public List<OrderResponse> getAllOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
+
 
 
     // --------------------

@@ -8,6 +8,7 @@ import com.example.demo.repository.PaymentRepository;
 import com.example.demo.service.PaymentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.demo.entity.OrderStatus;
 
 import java.util.UUID;
 
@@ -58,7 +59,7 @@ public class PaymentServiceImpl implements PaymentService {
         Order order = payment.getOrder();
 
         if (status.equals("SUCCESS")) {
-            order.setStatus(OrderStatus.PAID);
+            order.setStatus(OrderStatus.PENDING);
         } else if (status.equals("FAILED")) {
             order.setStatus(OrderStatus.FAILED);
         }
