@@ -1,14 +1,18 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.*;
+import com.example.demo.dto.AuthResponse;
+import com.example.demo.dto.CustomerLoginRequest;
+import com.example.demo.dto.CustomerResponse;
+import com.example.demo.dto.CustomerSignupRequest;
 import com.example.demo.entity.Customer;
 import com.example.demo.repository.CustomerRepository;
 import com.example.demo.security.JwtService;
 import com.example.demo.service.CustomerService;
-
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.example.demo.entity.CustomerRole;
 
 @Service
 @RequiredArgsConstructor
@@ -19,22 +23,42 @@ public class CustomerServiceImpl implements CustomerService {
     private final JwtService jwtService;
 
     @Override
-    public Customer signup(CustomerSignupRequest request) {
+    public CustomerResponse signup(CustomerSignupRequest request) {
         if (customerRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered!");
         }
 
         Customer customer = Customer.builder()
                 .name(request.name)
-                .email(request.getEmail())
+                .email(request.email)
                 .password(passwordEncoder.encode(request.getPassword()))
+                .phone(request.phone)
+                .address(request.address)
+                .customerRole(
+                        request.getCustomerRole() != null
+                                ? request.getCustomerRole()
+                                : CustomerRole.USER
+                )
                 .build();
 
-        return customerRepository.save(customer);
+        Customer cs = customerRepository.save(customer);
+
+        CustomerResponse csr = new CustomerResponse();
+        csr.customerUuid = cs.getCustomerUuid();  // FIX 1
+        csr.name = cs.getName();
+        csr.email = cs.getEmail();
+        csr.phone = cs.getPhone();                // FIX 2
+        csr.address = cs.getAddress();
+        csr.role = cs.getCustomerRole();
+
+        return csr;
     }
 
+
+
+
     @Override
-    public Customer login(CustomerLoginRequest request) {
+    public AuthResponse login(CustomerLoginRequest request) {
 
         Customer customer = customerRepository.findByEmail(request.email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -43,14 +67,14 @@ public class CustomerServiceImpl implements CustomerService {
             throw new RuntimeException("Invalid password");
         }
 
-        String token = jwtService.generateToken(customer.getUuid());
+        String token = jwtService.generateToken(customer.getUuid(),customer.getCustomerRole());
 
         return new AuthResponse(token, customer.getUuid());
     }
 
     @Override
-    public Customer getCustomerByUuid(String uuid) {
-        return customerRepository.findByUuid(uuid)
+    public Customer getCustomerByEmail(String email) {
+        return customerRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
     }
 }

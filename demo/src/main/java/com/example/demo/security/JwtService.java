@@ -1,5 +1,6 @@
 package com.example.demo.security;
 
+import com.example.demo.entity.CustomerRole;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Service;
@@ -11,12 +12,13 @@ import java.util.Map;
 @Service
 public class JwtService {
 
-    private final String SECRET = "mysecretkey12345";
+    private final String SECRET = "jnjgarn'jn'JNJJNJNPRJGPNENJGNEJNGEV'IJGUWRGNNR";
     private final long EXPIRATION_MS = 1000 * 60 * 60 * 24; // 24 hrs
 
-    public String generateToken(String customerUuid) {
+    public String generateToken(String customerUuid, CustomerRole role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("customerId", customerUuid);
+        claims.put("role",role);
 
         return Jwts.builder()
                 .setClaims(claims)
