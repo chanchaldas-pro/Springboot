@@ -12,7 +12,7 @@ import java.util.Map;
 @Service
 public class JwtService {
 
-    private final String SECRET = "jnjgarn'jn'JNJJNJNPRJGPNENJGNEJNGEV'IJGUWRGNNR";
+    private final String SECRET = "jnjgarnjnJNJJNJNPRJGPNENJGNEJNGEVIJGUWRGNNR";
     private final long EXPIRATION_MS = 1000 * 60 * 60 * 24; // 24 hrs
 
     public String generateToken(String customerUuid, CustomerRole role) {
@@ -29,7 +29,7 @@ public class JwtService {
                 .compact();
     }
 
-    public String extractCustomerUuid(String token) {
+    public  String extractCustomerUuid(String token) {
         return Jwts.parser()
                 .setSigningKey(SECRET)
                 .parseClaimsJws(token)

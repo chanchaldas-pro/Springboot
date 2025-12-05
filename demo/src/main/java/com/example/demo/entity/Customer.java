@@ -24,23 +24,24 @@ public class Customer {
     @Column(name = "customer_uuid", unique = true, updatable = false, nullable = false)
     private String customerUuid;
 
-    @NotBlank(message = "Name is required")
+
     private String name;
 
     @Email(message = "Email is not valid")
     @Column(unique = true)
+    @NotBlank(message = "Email is required")
     private String email;
 
     private String phone;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    @Size(min = 7, message = "Password must be at least 6 characters")
     private String password;
 
     private String address;
 
     @Enumerated(EnumType.STRING)
-    private CustomerRole customerRole = CustomerRole.USER;
+    private CustomerRole customerRole ;
 
     // Auto-generate UUID BEFORE saving
     @PrePersist

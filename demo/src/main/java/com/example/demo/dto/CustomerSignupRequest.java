@@ -8,7 +8,7 @@ public class CustomerSignupRequest {
     public String phone;
     public String address;
     private String password;
-    private CustomerRole role;
+    private CustomerRole customerRole;
 
     public String getEmail(){
         return this.email;
@@ -17,7 +17,7 @@ public class CustomerSignupRequest {
         return this.password;
     }
 
-    public CustomerRole getCustomerRole(){return role;}
+    public CustomerRole getCustomerRole(){return this.customerRole;}
 
 
 

@@ -22,8 +22,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // disable CSRF for APIs
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/customer/signup").permitAll()  // allow signup
-                        .requestMatchers("/api/customer/login").permitAll()   // allow login (if exists)
-                        .anyRequest().authenticated() // all other endpoints need auth
+                        .requestMatchers("/api/customer/login").permitAll()   // allow login (if exists).anyRequest().authenticated() // all other endpoints need auth
                 )
                 .httpBasic(httpBasic -> {}); // enable basic auth (or use JWT later)
 
