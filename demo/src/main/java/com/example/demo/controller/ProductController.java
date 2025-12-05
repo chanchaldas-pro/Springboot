@@ -7,12 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1")   // BASE PATH ONLY
 public class ProductController {
 
     private final ProductService productService;
+
 
     public ProductController(ProductService productService) {
         this.productService = productService;
@@ -31,10 +31,22 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
+
+
+
+
+
+
+
+
     // POST /api/v1/product  → create product
-    @PostMapping("/product")
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        Product saved = productService.createProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    @PostMapping("/products/new")
+    public ResponseEntity<Product> createProduct(
+            @RequestBody Product product,
+            @CookieValue(name = "jwt_token", required = false) String jwtToken
+    ) {
+        Product saved = productService.createProduct(product, jwtToken);
+        return ResponseEntity.ok(saved);
     }
+
 }

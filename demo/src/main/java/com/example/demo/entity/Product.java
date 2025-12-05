@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -23,9 +24,11 @@ public class Product {
     private String description;
 
     @Min(0)
+    @NotBlank
     private BigDecimal price;
 
     @Min(0)
+    @NotBlank(message = "Please mention Stock")
     private int stock;
 
     // -------------------------------------------------
