@@ -19,13 +19,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                .csrf(csrf -> csrf.disable()) // disable CSRF for APIs
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/customer/signup").permitAll()  // allow signup
-                        .requestMatchers("/api/customer/login").permitAll()   // allow login (if exists).anyRequest().authenticated() // all other endpoints need auth
+                        .anyRequest().permitAll()   // allow ALL URLs
                 )
-                .httpBasic(httpBasic -> {}); // enable basic auth (or use JWT later)
+                .httpBasic(httpBasic -> httpBasic.disable())  // disable basic auth
+                .formLogin(form -> form.disable());           // disable login form
 
         return http.build();
     }
+
 }

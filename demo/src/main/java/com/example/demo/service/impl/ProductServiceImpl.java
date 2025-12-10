@@ -49,6 +49,7 @@ public class ProductServiceImpl implements ProductService {
     public Product createProduct(Product product, String jwtToken) {
 
         // 1. Token must exist
+        System.out.println(jwtToken);
         if (jwtToken == null || jwtToken.isBlank()) {
             throw new UnauthorizedException("You must be logged in to create a product");
         }
