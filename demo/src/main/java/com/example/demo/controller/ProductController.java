@@ -43,10 +43,13 @@ public class ProductController {
     @PostMapping("/products/new")
     public ResponseEntity<Product> createProduct(
             @RequestBody Product product,
-            @CookieValue(name = "jwt_token", required = false) String jwtToken
+            @CookieValue(name = "jwt_token", required = true) String jwtToken
     ) {
-        Product saved = productService.createProduct(product, jwtToken);
+        System.out.println(jwtToken);
+        Product saved = productService.createProduct(product, null);
         return ResponseEntity.ok(saved);
     }
+
+
 
 }
