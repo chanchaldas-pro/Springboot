@@ -27,9 +27,7 @@ public class OrderController {
             @Valid @RequestBody CreateOrderRequest request,
             @CookieValue(name = "jwt_token", required = true) String jwtToken
     ) {
-        if(jwtToken==null || jwtToken.isBlank()){
-            throw  new UnauthorizedException("Please login to place a order");
-        }
+
         OrderResponse response = orderService.createOrder(request,jwtToken);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
