@@ -21,7 +21,7 @@ public class PaymentClient {
 
     // -------------------------------
     // INITIATE PAYMENT
-    // -------------------------------
+    // ------------------- ------------
     public PaymentInitiateResponse initiatePayment(PaymentInitiateRequest request) {
 
         log.info("Calling Payment Gateway for order {}", request.getOrderId());
