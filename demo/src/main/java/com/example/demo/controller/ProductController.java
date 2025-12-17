@@ -1,4 +1,9 @@
 package com.example.demo.controller;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
+
+
 
 import com.example.demo.dto.ProductRequest;
 import com.example.demo.dto.ProductResponse;
@@ -11,27 +16,26 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @RestController
-@RequestMapping("/api/v1")   // BASE PATH ONLY
+
+@RequestMapping("/api/v1")
 public class ProductController {
 
     private final ProductService productService;
-
 
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
 
-    // GET /api/v1/products  → list all products
+    // PUBLIC
     @GetMapping("/products")
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
-    // GET /api/v1/product/{id}  → single product
+    // PUBLIC
     @GetMapping("/product/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
-        ProductResponse response = productService.getProductById(id);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(productService.getProductById(id));
     }
 
 
@@ -40,20 +44,27 @@ public class ProductController {
 
 
 
-
-
-
-    // POST /api/v1/product  → create product
-    @PostMapping("/products/new")
+    // ADMIN ONLY
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/products")
     public ResponseEntity<ProductResponse> createProduct(
-            @Valid @RequestBody ProductRequest productRequest,
-            @CookieValue(name = "jwt_token", required = true) String jwtToken
+            @Valid @RequestBody ProductRequest request,
+            @AuthenticationPrincipal String customerUuid
     ) {
-        ProductResponse response = productService.createProduct(productRequest, jwtToken);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(productService.createProduct(request, customerUuid));
     }
 
 
 
+    //Testing
+
+//    @PostMapping("/productss")
+//    public ResponseEntity<?> debug(Authentication authentication) {
+//        System.out.println("AUTH = " + authentication);
+//        System.out.println("AUTHORITIES = " + authentication.getAuthorities());
+//        return ResponseEntity.ok("check logs");
+//    }
 
 }
+

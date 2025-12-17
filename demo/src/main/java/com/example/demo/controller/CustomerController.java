@@ -51,4 +51,14 @@ public class CustomerController {
         return ResponseEntity.ok(auth);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+
+        customerService.logout(response);
+
+        return ResponseEntity.noContent().build(); // 204
+    }
+
+
+
 }

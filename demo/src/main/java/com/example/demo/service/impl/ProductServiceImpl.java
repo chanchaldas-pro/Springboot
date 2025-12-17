@@ -53,44 +53,25 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse createProduct(ProductRequest request, String jwtToken) {
 
-        // 1. Token must exist
-        if (jwtToken == null || jwtToken.isBlank()) {
-            throw new UnauthorizedException("You must be logged in to create a product");
+
+        public ProductResponse createProduct(ProductRequest request, String customerUuid) {
+
+            // (Optional) business validation: ensure customer exists
+            Customer customer = customerRepository.findByCustomerUuid(customerUuid)
+                    .orElseThrow(() -> new NotFoundException("Customer not found"));
+
+            // Business logic only
+            Product product = new Product();
+            product.setName(request.getName());
+            product.setDescription(request.getDescription());
+            product.setPrice(request.getPrice());
+            product.setStock(request.getStock());
+
+            Product saved = productRepository.save(product);
+            return mapToResponse(saved);
         }
 
-        // 2. Validate + extract customer UUID from token
-        String customerUuid;
-        try {
-            JwtService jwtService = new JwtService();
-            customerUuid = jwtService.extractCustomerUuid(jwtToken);
-        } catch (Exception e) {
-            throw new UnauthorizedException("Invalid or expired token");
-        }
-
-        // 3. Fetch customer from DB
-        Customer customer = customerRepository.findByCustomerUuid(customerUuid)
-                .orElseThrow(() -> new NotFoundException("Customer not found"));
-
-        // 4. Check role
-        if (customer.getCustomerRole() != CustomerRole.ADMIN) {
-            throw new UnauthorizedException("Only ADMIN can create products");
-        }
-
-        // 5. Map ProductRequest → Product entity
-        Product product = new Product();
-        product.setName(request.getName());
-        product.setDescription(request.getDescription());
-        product.setPrice(request.getPrice());
-        product.setStock(request.getStock());
-
-        // 6. Save product
-        Product saved = productRepository.save(product);
-
-        // 7. Return ProductResponse
-        return mapToResponse(saved);
-    }
 
     // -------------------------------------------------
 // MAPPING METHOD

@@ -40,16 +40,8 @@ public class OrderServiceImpl implements OrderService {
     // --------------------
     @Override
 
-    public OrderResponse createOrder(CreateOrderRequest request,String jwtToken) {
+    public OrderResponse createOrder(CreateOrderRequest request,String customerUuid) {
 
-        // 2. Validate + extract customer UUID from token
-        String customerUuid;
-        try {
-            JwtService jwtService= new JwtService();
-            customerUuid =  jwtService.extractCustomerUuid(jwtToken);
-        } catch (Exception e) {
-            throw new UnauthorizedException("Invalid or expired token");
-        }
 
         // 3. Fetch customer from DB
 
