@@ -1,15 +1,17 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.ProductRequest;
+import com.example.demo.dto.ProductResponse;
 import com.example.demo.entity.Product;
 
 import java.util.List;
 
 public interface ProductService {
 
-    List<Product> getAllProducts();
+    List<ProductResponse> getAllProducts();
 
-    Product getProductById(Long id);
+    ProductResponse getProductById(Long id);
 
-    Product createProduct(Product product,String JwtToken);
+    ProductResponse createProduct(ProductRequest product, String JwtToken);
 }
 

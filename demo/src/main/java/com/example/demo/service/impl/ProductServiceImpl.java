@@ -12,6 +12,8 @@ import com.example.demo.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.demo.security.JwtService;
+import com.example.demo.dto.ProductResponse;
+import com.example.demo.dto.ProductRequest;
 
 
 import java.math.BigDecimal;
@@ -35,56 +37,55 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductResponse> getAllProducts() {
+        return productRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @Override
-    public Product getProductById(Long id) {
-        return productRepository.findById(id)
+    public ProductResponse getProductById(Long id) {
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+
+        return mapToResponse(product);
     }
 
     @Override
-    public Product createProduct(Product product, String jwtToken) {
 
-        // 1. Token must exist
-        System.out.println(jwtToken);
-        if (jwtToken == null || jwtToken.isBlank()) {
-            throw new UnauthorizedException("You must be logged in to create a product");
-        }
 
-        // 2. Validate + extract customer UUID from token
-        String customerUuid;
-        try {
-            JwtService jwtService= new JwtService();
-            customerUuid =  jwtService.extractCustomerUuid(jwtToken);
-        } catch (Exception e) {
-            throw new UnauthorizedException("Invalid or expired token");
-        }
+        public ProductResponse createProduct(ProductRequest request, String customerUuid) {
 
-        // 3. Fetch customer from DB
+            // (Optional) business validation: ensure customer exists
+            Customer customer = customerRepository.findByCustomerUuid(customerUuid)
+                    .orElseThrow(() -> new NotFoundException("Customer not found"));
 
-        Customer customer = customerRepository.findByCustomerUuid(customerUuid)
-                .orElseThrow(() -> new NotFoundException("Customer not found"));
+            // Business logic only
+            Product product = new Product();
+            product.setName(request.getName());
+            product.setDescription(request.getDescription());
+            product.setPrice(request.getPrice());
+            product.setStock(request.getStock());
 
-        // 4. Check role
-        if (customer.getCustomerRole() != CustomerRole.ADMIN) {
-            throw new UnauthorizedException("Only ADMIN can create products");
-        }
-
-        // 5. Optional validation on product fields
-        if (product.getName() == null || product.getName().isBlank()) {
-            throw new BadRequestException("Product name is required");
-        }
-
-        if (product.getPrice() == null || product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BadRequestException("Product price must be greater than 0");
+            Product saved = productRepository.save(product);
+            return mapToResponse(saved);
         }
 
 
-        // 6. Save product
-        return productRepository.save(product);
+    // -------------------------------------------------
+// MAPPING METHOD
+// -------------------------------------------------
+    private ProductResponse mapToResponse(Product product) {
+        return new ProductResponse(
+                product.getId(),
+                product.getInternalId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getStock()
+        );
     }
+
 
 }

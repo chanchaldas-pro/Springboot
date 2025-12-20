@@ -1,4 +1,5 @@
 package com.example.demo.service.impl;
+import jakarta.servlet.http.Cookie;
 
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.dto.CustomerLoginRequest;
@@ -10,8 +11,11 @@ import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.repository.CustomerRepository;
 import com.example.demo.security.JwtService;
 import com.example.demo.service.CustomerService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.demo.entity.CustomerRole;
@@ -185,5 +189,23 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("Customer not found"));
     }
+
+    public Void logout(HttpServletResponse response) {
+
+        // Clear SecurityContext
+        SecurityContextHolder.clearContext();
+
+        // Delete JWT cookie
+        Cookie cookie = new Cookie("jwt_token", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // prod
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+
+        response.addCookie(cookie);
+        return null;
+    }
+
+
 }
 
