@@ -25,7 +25,8 @@ public class PaymentServiceImpl {
 
     public String initiatePayment(Long orderId) {
        @Autowired
-        Order order=OrderRepository.findByID(orderId);
+
+
         Payment payment = paymentRepository
                 .findByOrder(order)
                 .orElseGet(() -> createPayment(order));

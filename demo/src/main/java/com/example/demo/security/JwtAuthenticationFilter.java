@@ -79,6 +79,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
 
+
+
+
             // 6. Create Authentication
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
@@ -101,7 +104,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 8. Continue filter chain
         filterChain.doFilter(request, response);
     }
-
+//something
 
 
 }
