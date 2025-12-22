@@ -5,7 +5,7 @@ import com.example.demo.entity.Payment;
 
 public interface PaymentService {
 
-    Payment initiatePayment(Order order);
+    Payment initiatePayment(Long OrderId);
 
     Payment updatePaymentStatus(String externalPaymentId, String status);
 }
