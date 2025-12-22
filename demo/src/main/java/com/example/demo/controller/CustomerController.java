@@ -31,6 +31,8 @@ public class CustomerController {
 //    Postman, frontend, etc.).
 //            "This object lets you modify what you want to send back to the client —
 //            headers, cookies, status code, body, content type, etc."
+
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody CustomerLoginRequest request,
                                               HttpServletResponse response) {
@@ -51,6 +53,8 @@ public class CustomerController {
         return ResponseEntity.ok(auth);
     }
 
+
+
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
 
@@ -59,6 +63,6 @@ public class CustomerController {
         return ResponseEntity.noContent().build(); // 204
     }
 
-
-
 }
+
+

@@ -2,7 +2,7 @@ package com.example.demo.dto;
 
 public class PaymentInitiateResponse {
 
-    private Long paymentId;             // internal DB payment ID
+    private String paymentId;             // internal DB payment ID
     private String externalPaymentId;   // UUID or provider ID
     private String providerSessionId;   // from payment provider
     private String redirectUrl;         // where frontend should redirect user
@@ -11,11 +11,11 @@ public class PaymentInitiateResponse {
     // GETTERS & SETTERS
     // -----------------------
 
-    public Long getPaymentId() {
+    public String getPaymentId() {
         return paymentId;
     }
 
-    public void setPaymentId(Long paymentId) {
+    public void setPaymentId(String paymentId) {
         this.paymentId = paymentId;
     }
 

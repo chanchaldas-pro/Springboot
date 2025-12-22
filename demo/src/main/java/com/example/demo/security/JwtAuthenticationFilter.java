@@ -58,10 +58,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 2. Token must exist
         if (token == null || token.isBlank()) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Missing JWT token");
+            filterChain.doFilter(request, response);
             return;
         }
+
 
         try {
             // 3. Validate token

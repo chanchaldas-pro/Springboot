@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: demo
+
+  datasource:
+    url: jdbc:postgresql://ep-solitary-frost-ahubigat-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+    username:  neondb_owner
+    password:  npg_eR9mygczZ0OW
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    debug: true
+
+server:
+  port: 8081
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      paymentGateway:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        sliding-window-size: 10
+
+  retry:
+    instances:
+      paymentGateway:
+        max-attempts: 3
+        wait-duration: 1s
+
+
+#Property	What it does
+#ddl-auto=update	Auto-create/update tables based on Entities
+#show-sql=true	Show SQL queries in console
+#hibernate.dialect=PostgreSQLDialect	Use PostgreSQL SQL syntax
+
+
+
+
+

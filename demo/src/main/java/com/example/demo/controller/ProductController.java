@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @RestController
 
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/product")
 public class ProductController {
 
     private final ProductService productService;
@@ -27,26 +27,20 @@ public class ProductController {
     }
 
     // PUBLIC
-    @GetMapping("/products")
+    @GetMapping("/allproducts")
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
     // PUBLIC
-    @GetMapping("/product/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
-
-
-
-
-
-
     // ADMIN ONLY
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/products")
+    @PostMapping("/new")
     public ResponseEntity<ProductResponse> createProduct(
             @Valid @RequestBody ProductRequest request,
             @AuthenticationPrincipal String customerUuid
@@ -57,14 +51,7 @@ public class ProductController {
 
 
 
-    //Testing
 
-//    @PostMapping("/productss")
-//    public ResponseEntity<?> debug(Authentication authentication) {
-//        System.out.println("AUTH = " + authentication);
-//        System.out.println("AUTHORITIES = " + authentication.getAuthorities());
-//        return ResponseEntity.ok("check logs");
-//    }
 
 }
 
