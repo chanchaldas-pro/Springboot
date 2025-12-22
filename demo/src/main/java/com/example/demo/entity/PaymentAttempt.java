@@ -27,4 +27,16 @@ public class PaymentAttempt {
     private boolean success;
 
     // Getters & Setters
+
+    public void setPayment(Payment payment){
+        this.payment=payment;
+    }
+
+    public void setProviderResponse(String response){
+        this.providerResponse=response;
+    }
+
+    public void setSuccess(boolean success){
+        this.success=success;
+    }
 }

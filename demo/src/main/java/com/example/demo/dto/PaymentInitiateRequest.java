@@ -12,6 +12,8 @@ public class PaymentInitiateRequest {
     @NotNull(message = "Amount is required")
     private BigDecimal amount;
 
+    private String callbackUrl;
+
     // Getters & Setters
 
     public Long getOrderId() {
@@ -28,5 +30,9 @@ public class PaymentInitiateRequest {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public void setCallbackUrl(String Url){
+        this.callbackUrl=Url;
     }
 }

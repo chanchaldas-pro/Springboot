@@ -6,6 +6,7 @@ import com.example.demo.entity.Customer;
 import com.example.demo.entity.Order;
 import com.example.demo.entity.OrderItem;
 import com.example.demo.entity.Product;
+import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.repository.CustomerRepository;
@@ -65,6 +66,15 @@ public class OrderServiceImpl implements OrderService {
             item.setProduct(product);
             item.setQuantity(itemDto.getQuantity());
             item.setPrice(product.getPrice()); // Lock price
+
+            int NetStock =product.getStock()-itemDto.getQuantity();
+            if(NetStock<0){
+                throw new BadRequestException("Order Quantity can not greater than Product in Stock");
+            }
+
+            product.setStock(NetStock);
+
+
 
             return item;
 

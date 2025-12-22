@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/order")
 public class OrderController {
 
     private final OrderService orderService;
@@ -24,7 +24,7 @@ public class OrderController {
     }
 
     // POST /api/v1/order
-    @PostMapping("/order")
+    @PostMapping("/new")
     public ResponseEntity<OrderResponse> createOrder(
             @Valid @RequestBody CreateOrderRequest request,
             @AuthenticationPrincipal String customerUuid
@@ -34,14 +34,15 @@ public class OrderController {
     }
 
     // GET /api/v1/order/{id}
-    @GetMapping("/order/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
 
-
-    @GetMapping("/orders")
+    // ADMIN ONLY
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/allorders")
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
