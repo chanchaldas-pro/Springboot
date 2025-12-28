@@ -34,6 +34,8 @@ public class Order {
     @Min(0)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
+    private String externalOrderId;
+
     // -----------------------------------------------------
     // BUSINESS LOGIC
     // -----------------------------------------------------
@@ -87,6 +89,14 @@ public class Order {
 
     public List<OrderItem> getItems() {
         return items;
+    }
+
+    public String getExternalOrderId(){
+        return externalOrderId;
+    }
+
+    public void setExternalOrderId(String externalOrderId){
+        this.externalOrderId=externalOrderId;
     }
 
 

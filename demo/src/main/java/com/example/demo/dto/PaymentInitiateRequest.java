@@ -9,6 +9,8 @@ public class PaymentInitiateRequest {
     @NotNull(message = "Order ID is required")
     private Long orderId;
 
+    private String email;
+
     @NotNull(message = "Amount is required")
     private BigDecimal amount;
 
@@ -30,6 +32,14 @@ public class PaymentInitiateRequest {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public String getEmail(){
+        return email;
+    }
+
+    public void setEmail(String email){
+        this.email=email;
     }
 
     public void setCallbackUrl(String Url){

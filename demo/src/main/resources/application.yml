@@ -40,6 +40,12 @@ resilience4j:
         max-attempts: 3
         wait-duration: 1s
 
+razorpay:
+  key:
+    id: rzp_test_RwhpWuPinCQwTX
+    secret: u4K05kY3MM73HwtL1tiSDEE7
+
+
 
 #Property	What it does
 #ddl-auto=update	Auto-create/update tables based on Entities
