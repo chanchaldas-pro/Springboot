@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Payment Checkout</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Razorpay -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            min-height: 100vh;
+        }
+        .checkout-card {
+            max-width: 800px;
+            margin: 60px auto;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="card checkout-card shadow-lg">
+        <div class="card-body">
+
+            <h3 class="text-center mb-4">🔐 Secure Order Checkout</h3>
+
+            <!-- Order ID Input -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <input type="number" id="orderIdInput" class="form-control form-control-lg"
+                           placeholder="Enter Order ID">
+                </div>
+                <div class="col-md-4 d-grid">
+                    <button class="btn btn-dark btn-lg" onclick="fetchOrder()">Fetch Order</button>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="alert alert-danger hidden"></div>
+
+            <!-- Order Details -->
+            <div id="orderSection" class="hidden">
+
+                <h5 class="mb-3">📦 Order Details</h5>
+
+                <p><strong>Order ID:</strong> <span id="orderId"></span></p>
+                <p><strong>Customer ID:</strong> <span id="customerId"></span></p>
+                <p><strong>Status:</strong>
+                    <span id="orderStatus" class="badge bg-warning text-dark"></span>
+                </p>
+
+                <!-- Items Table -->
+                <table class="table table-bordered mt-3">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Quantity</th>
+                        <th>Price (₹)</th>
+                    </tr>
+                    </thead>
+                    <tbody id="itemsTable"></tbody>
+                </table>
+
+                <h4 class="text-end mt-3">
+                    Total: ₹<span id="totalAmount"></span>
+                </h4>
+
+                <!-- Paid Message -->
+                <div id="paidMessage" class="alert alert-success text-center mt-3 hidden">
+                    ✅ This order is already paid.
+                </div>
+
+                <!-- Pay Button -->
+                <div class="text-center mt-4" id="paymentSection">
+                    <button class="btn btn-primary btn-lg px-5" onclick="makePayment()">
+                        Proceed to Pay
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    let orderData = null;
+
+    function fetchOrder() {
+        const orderId = document.getElementById("orderIdInput").value;
+        resetUI();
+
+        if (!orderId) {
+            showError("Please enter a valid Order ID");
+            return;
+        }
+
+        fetch(`/api/v1/order/${orderId}`)
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(data => {
+                orderData = data;
+                renderOrder(data);
+            })
+            .catch(() => {
+                showError("Order not found or server error");
+            });
+    }
+
+    function renderOrder(order) {
+        document.getElementById("orderSection").classList.remove("hidden");
+
+        document.getElementById("orderId").innerText = order.id;
+        document.getElementById("customerId").innerText = order.customerId;
+        document.getElementById("orderStatus").innerText = order.status;
+        document.getElementById("totalAmount").innerText = order.totalAmount;
+
+        const itemsTable = document.getElementById("itemsTable");
+        itemsTable.innerHTML = "";
+
+        order.items.forEach(item => {
+            itemsTable.innerHTML += `
+                <tr>
+                    <td>${item.productId}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.price}</td>
+                </tr>
+            `;
+        });
+
+        // Handle payment visibility
+        if (order.status === "PAID") {
+            document.getElementById("paymentSection").classList.add("hidden");
+            document.getElementById("paidMessage").classList.remove("hidden");
+            document.getElementById("orderStatus").className = "badge bg-success";
+        } else {
+            document.getElementById("paymentSection").classList.remove("hidden");
+            document.getElementById("paidMessage").classList.add("hidden");
+            document.getElementById("orderStatus").className = "badge bg-warning text-dark";
+        }
+    }
+
+    function makePayment() {
+        if (!orderData) return;
+
+        fetch(`/api/v1/payment/${orderData.id}/initiate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        })
+            .then(res => res.json())
+            .then(rzpOrder => {
+
+                const options = {
+                    key: "rzp_test_RwhpWuPinCQwTX",
+                    amount: rzpOrder.amount,
+                    currency: "INR",
+                    name: "Chanchal",
+                    description: "Order Payment",
+                    order_id: rzpOrder.externalOrderId,
+                    callback_url: "/api/v1/payment/callback"
+                };
+
+                const razorpay = new Razorpay(options);
+                razorpay.open();
+            })
+            .catch(() => {
+                alert("Failed to initiate payment");
+            });
+    }
+
+    function showError(msg) {
+        const err = document.getElementById("errorMessage");
+        err.innerText = msg;
+        err.classList.remove("hidden");
+    }
+
+    function resetUI() {
+        document.getElementById("errorMessage").classList.add("hidden");
+        document.getElementById("orderSection").classList.add("hidden");
+        document.getElementById("paidMessage").classList.add("hidden");
+    }
+</script>
+
+</body>
+</html>

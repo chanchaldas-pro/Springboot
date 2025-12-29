@@ -1,13 +1,18 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.PaymentInitiateResponse;
 import com.example.demo.entity.Payment;
 import com.example.demo.service.PaymentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
-@RequestMapping("/api/v1")   // Base API version
+@RequestMapping("/api/v1/payment")
 public class PaymentController {
 
     private final PaymentService paymentService;
@@ -16,25 +21,22 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
-    // POST /api/v1/payment/{orderId}/initiate
-    @PostMapping("/payment/{orderId}/initiate")
-    public ResponseEntity<Payment> initiatePayment(@PathVariable Long orderId) {
-
-        // SECURITY NOTE: Do NOT log sensitive info anywhere here.
-        Payment payment = paymentService.initiatePayment(orderId);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(payment);
+    @PostMapping("/{orderId}/initiate")
+    public ResponseEntity<PaymentInitiateResponse> initiatePayment(@PathVariable Long orderId) {
+        PaymentInitiateResponse res = paymentService.initiatePayment(orderId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
-    // POST /api/v1/payment/callback
-    @PostMapping("/payment/callback")
-    public ResponseEntity<String> paymentCallback(
-            @RequestParam("externalPaymentId") String externalPaymentId,
-            @RequestParam("status") String status
-    ) {
-        paymentService.updatePaymentStatus(externalPaymentId, status);
-        return ResponseEntity.ok("Callback processed");
-    }
+//    @PostMapping("/callback")
+//    public ResponseEntity<String> paymentCallback(
+//            @RequestParam String externalPaymentId,
+//            @RequestParam String status
+//    ) {
+//        paymentService.updatePaymentStatus(externalPaymentId, status);
+//        return ResponseEntity.ok("Callback processed");
+//    }
+}
+
 
     // Optional but helpful:
     // GET /api/v1/payment/{id}
@@ -43,4 +45,4 @@ public class PaymentController {
 //        Payment payment = paymentService.getPaymentById(id);
 //        return ResponseEntity.ok(payment);
 //    }
-}
+

@@ -33,8 +33,35 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/customer/login", "/api/v1/customer/signup").permitAll()
+                        .requestMatchers("/api/v1/customer/login", "/api/v1/customer/signup","/api/v1/payment/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products","/api/v1/product/**").permitAll()
+                        .requestMatchers(
+                                "/",
+                                "/checkout.html",
+                                "/success.html",
+                                "/failure.html",
+                                "/static/**",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/order/allorders"
+                        ).authenticated()
+
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/order/new"
+                        ).authenticated()
+
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/order/*"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
 
