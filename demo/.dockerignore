@@ -1,0 +1,19 @@
+# Maven build output
+target/
+
+# Git
+.git
+.gitignore
+
+# IDE files
+.idea
+.vscode
+*.iml
+
+# Environment / secrets
+.env
+*.env
+
+# OS junk
+.DS_Store
+Thumbs.db
