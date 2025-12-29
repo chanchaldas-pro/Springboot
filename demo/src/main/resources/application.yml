@@ -3,9 +3,9 @@ spring:
     name: demo
 
   datasource:
-    url: jdbc:postgresql://ep-solitary-frost-ahubigat-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-    username:  neondb_owner
-    password:  npg_eR9mygczZ0OW
+    url: ${DB_URL}
+    username:  ${DB_USERNAME}
+    password:  ${DB_PASSWORD}
 
   jpa:
     hibernate:
@@ -42,8 +42,8 @@ resilience4j:
 
 razorpay:
   key:
-    id: rzp_test_RwhpWuPinCQwTX
-    secret: u4K05kY3MM73HwtL1tiSDEE7
+    id: ${RAZORPAY_KEY}
+    secret: ${RAZORPAY_SECRET}
 
 
 
