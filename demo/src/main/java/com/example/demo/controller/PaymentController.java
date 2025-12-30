@@ -21,6 +21,8 @@ public class PaymentController {
 
     @Value("${razorpay.key.id}")
     private String razorpayKeyId;
+
+
     @Value("${razorpay.key.secret}")
     private String razorpayKeySecret; // Replace with your Key Secret
 
