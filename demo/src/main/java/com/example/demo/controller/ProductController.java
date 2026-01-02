@@ -2,9 +2,6 @@ package com.example.demo.controller;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.Authentication;
-
-
-
 import com.example.demo.dto.ProductRequest;
 import com.example.demo.dto.ProductResponse;
 import com.example.demo.entity.Product;
@@ -25,6 +22,9 @@ public class ProductController {
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
+
+
+
 
     // PUBLIC
     @GetMapping("/allproducts")
@@ -48,10 +48,6 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(productService.createProduct(request, customerUuid));
     }
-
-
-
-
 
 }
 

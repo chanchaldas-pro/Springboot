@@ -51,7 +51,6 @@ public class SecurityConfig {
                                 "/api/v1/order/allorders"
                         ).authenticated()
 
-
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/v1/order/new"

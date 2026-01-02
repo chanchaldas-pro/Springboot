@@ -17,11 +17,11 @@ import org.springframework.web.reactive.result.view.RedirectView;
 
 @RestController
 @RequestMapping("/api/v1/payment")
+///api/v1/payment/callback
 public class PaymentController {
 
     @Value("${razorpay.key.id}")
     private String razorpayKeyId;
-
 
     @Value("${razorpay.key.secret}")
     private String razorpayKeySecret; // Replace with your Key Secret
@@ -37,8 +37,6 @@ public class PaymentController {
         PaymentInitiateResponse res = paymentService.initiatePayment(orderId);
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
-
-
 
     @PostMapping("/callback")
     public RedirectView paymentCallback(
@@ -69,22 +67,13 @@ public class PaymentController {
 
     @PostMapping("/get-key")
     public String getKey() {
+
         return razorpayKeyId;
     }
-
-
-
 
 
 
 }
 
 
-    // Optional but helpful:
-    // GET /api/v1/payment/{id}
-//    @GetMapping("/payment/{id}")
-//    public ResponseEntity<Payment> getPaymentById(@PathVariable Long id) {
-//        Payment payment = paymentService.getPaymentById(id);
-//        return ResponseEntity.ok(payment);
-//    }
 
