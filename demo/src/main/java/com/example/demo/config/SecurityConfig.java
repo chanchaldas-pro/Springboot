@@ -33,8 +33,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/customer/login", "/api/v1/customer/signup","/api/v1/payment/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/products","/api/v1/product/**").permitAll()
+                        .requestMatchers("/api/v1/customer/login", "/api/v1/customer/signup","/api/v1/payment/**","/api/webhook/payment").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products","/api/v1/product/**","/api/v1/payment/callback").permitAll()
                         .requestMatchers(
                                 "/",
                                 "/checkout.html",
@@ -44,6 +44,7 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**"
+
                         ).permitAll()
 
                         .requestMatchers(

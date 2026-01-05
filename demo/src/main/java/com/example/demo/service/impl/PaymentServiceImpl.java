@@ -39,29 +39,43 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public PaymentInitiateResponse initiatePayment(Long orderId) {
 
-        // 1️⃣ Fetch order from DB
+        // 1️⃣ Fetch Order
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Order not found with id: " + orderId)
-                );
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
-        // Optional safety check
         if (order.getStatus() == OrderStatus.COMPLETED) {
             throw new IllegalStateException("Order already paid");
         }
 
-        // 2️⃣ Convert amount to paise
+        // 2️⃣ Find or Create Payment (ONLY ONCE PER ORDER)
+        Payment payment = paymentRepository.findByOrder(order)
+                .orElseGet(() -> {
+                    Payment p = new Payment();
+                    p.setOrder(order);
+                    p.setAmount(order.getTotalAmount());
+                    p.setStatus(PaymentStatus.PENDING);
+                    return paymentRepository.save(p);
+                });
+
+        // 3️⃣ ALWAYS create PaymentAttempt
+        PaymentAttempt attempt = new PaymentAttempt();
+        attempt.setPayment(payment);
+        attempt.setSuccess(false);
+        attempt.setPayment(payment);
+        paymentAttemptRepository.save(attempt);
+
+        // 4️⃣ Convert amount to paise
         BigDecimal amountInPaise = order.getTotalAmount()
                 .multiply(BigDecimal.valueOf(100));
 
-        // 3️⃣ Build Razorpay request
+        // 5️⃣ Build Razorpay Order Request
         Map<String, Object> razorpayRequest = new HashMap<>();
         razorpayRequest.put("amount", amountInPaise.intValueExact());
         razorpayRequest.put("currency", "INR");
-        razorpayRequest.put("receipt", "order_" + order.getId());
+        razorpayRequest.put("receipt", order.getId().toString());
         razorpayRequest.put("payment_capture", 1);
 
-        // 4️⃣ Call Razorpay Order API
+        // 6️⃣ Create Razorpay Order
         Map<String, Object> razorpayResponse =
                 razorpayWebClient.post()
                         .uri("/orders")
@@ -72,34 +86,22 @@ public class PaymentServiceImpl implements PaymentService {
                         .onStatus(HttpStatusCode::is5xxServerError,
                                 res -> Mono.error(new RuntimeException("Razorpay server error")))
                         .bodyToMono(Map.class)
-                        .retryWhen(
-                                Retry.fixedDelay(2, Duration.ofMillis(500))
-                                        .filter(this::isRetryableError)
-                        )
+                        .retryWhen(Retry.fixedDelay(2, Duration.ofMillis(500)))
                         .block();
 
-        // 5️⃣ Extract Razorpay order id
         String externalOrderId = (String) razorpayResponse.get("id");
 
+        // 7️⃣ Attach Razorpay Order ID to Attempt
+        attempt.setExternalOrderId(externalOrderId);
+        attempt.setProviderResponse("Payment initiated");
+        paymentAttemptRepository.save(attempt);
 
 
-        // 6️⃣ Persist payment record (important!)
-        Payment payment = new Payment();
-        payment.setOrder(order);
-        payment.setAmount(order.getTotalAmount());
-        payment.setStatus(PaymentStatus.INITIATED);
-        paymentRepository.save(payment);
-        order.setExternalOrderId(externalOrderId);
-        orderRepository.save(order);
 
-
-        // 7️⃣ Build response for frontend
+        // 9️⃣ Response to Frontend
         PaymentInitiateResponse response = new PaymentInitiateResponse();
         response.setExternalOrderId(externalOrderId);
         response.setAmount(amountInPaise.intValueExact());
-        response.setRedirectUrl(
-                "https://checkout.razorpay.com/v1/checkout.js?order_id=" + externalOrderId
-        );
 
 
         return response;
@@ -112,24 +114,5 @@ public class PaymentServiceImpl implements PaymentService {
                 || ex instanceof TimeoutException;
     }
 
-    /* ================== Helper methods (existing logic) ================== */
 
-//    private Payment createPayment(Order order) {
-//        Payment payment = new Payment();
-//        payment.setOrder(order);
-//        payment.setAmount(order.getTotalAmount());
-//        return paymentRepository.save(payment);
-//    }
-//
-//    private void saveAttempt(Payment payment, String response, boolean success) {
-//        PaymentAttempt attempt = new PaymentAttempt();
-//        attempt.setPayment(payment);
-//        attempt.setProviderResponse(response);
-//        attempt.setSuccess(success);
-//        paymentAttemptRepository.save(attempt);
-//    }
-//
-//    private int convertToPaise(BigDecimal amount) {
-//        return amount.multiply(BigDecimal.valueOf(100)).intValueExact();
-//    }
 }
