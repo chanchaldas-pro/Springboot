@@ -118,6 +118,10 @@
         </dependency>
 
 
+
+
+
+
         <!-- Proper test starter -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -129,6 +133,14 @@
 
     <build>
         <plugins>
+
+            <!-- Spring Boot executable JAR -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- Compiler + Lombok -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -143,8 +155,10 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
+
 
 
 </project>
