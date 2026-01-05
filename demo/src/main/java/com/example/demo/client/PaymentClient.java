@@ -57,20 +57,7 @@ public class PaymentClient {
 
         res.setExternalOrderId(razorpayOrder.get("id"));
         res.setAmount(amountInPaise.intValueExact());
-
-
-
-
-
-
-
-
         return res;
-
-
-
-
-
     }
 
     private PaymentInitiateResponse fallback(

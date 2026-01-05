@@ -44,6 +44,8 @@ razorpay:
   key:
     id: ${RAZORPAY_KEY}
     secret: ${RAZORPAY_SECRET}
+  webhook:
+    secret: ${RAZORPAY_WEBHOOK_SECRET}
 
 
 

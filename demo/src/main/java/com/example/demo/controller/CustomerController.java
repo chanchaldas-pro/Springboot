@@ -25,14 +25,6 @@ public class CustomerController {
         return customerService.signup(request);
     }
 
-    // LOGIN
-//    HttpServletResponse is an interface in Java (Servlet API) that represents
-//    the HTTP response sent from your server back to the client (browser, mobile app,
-//    Postman, frontend, etc.).
-//            "This object lets you modify what you want to send back to the client —
-//            headers, cookies, status code, body, content type, etc."
-
-
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody CustomerLoginRequest request,
                                               HttpServletResponse response) {

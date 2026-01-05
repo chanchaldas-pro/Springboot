@@ -13,11 +13,18 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.reactive.result.view.RedirectView;
 
 @RestController
 @RequestMapping("/api/v1/payment")
+///api/v1/payment/callback
 public class PaymentController {
+
+    @Value("${razorpay.key.id}")
+    private String razorpayKeyId;
+
+    @Value("${razorpay.key.secret}")
+    private String razorpayKeySecret; // Replace with your Key Secret
 
     private final PaymentService paymentService;
 
@@ -38,17 +45,15 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
-    @PostMapping("/payment-callback")
+    @PostMapping("/callback")
     public RedirectView paymentCallback(
             @RequestParam("razorpay_order_id") String razorpayOrderId,
             @RequestParam("razorpay_payment_id") String razorpayPaymentId,
             @RequestParam("razorpay_signature") String razorpaySignature) throws RazorpayException {
         try {
-
-
             // Verify the payment signature here
             String signature = razorpayOrderId + "|" + razorpayPaymentId;
-            boolean isValid = Utils.verifySignature(signature, razorpaySignature,razorpayKeySecret );
+            boolean isValid = Utils.verifySignature(signature, razorpaySignature, razorpayKeySecret);
 
             if (isValid) {
                 // Payment successful
@@ -69,12 +74,13 @@ public class PaymentController {
 
     @PostMapping("/get-key")
     public String getKey() {
+
         return razorpayKeyId;
     }
 
 
-}
 
+}
 
 
 

@@ -161,15 +161,15 @@
             .then(res => res.json())
             .then(rzpOrder => {
 
-                const options = {
-                    key: "rzp_test_RwhpWuPinCQwTX",
-                    amount: rzpOrder.amount,
-                    currency: "INR",
-                    name: "Chanchal",
-                    description: "Order Payment",
-                    order_id: rzpOrder.externalOrderId,
-                    callback_url: "/api/v1/payment/callback"
-                };
+               const options = {
+                              key: "rzp_test_RxlmufJTq6q8gu",
+                              amount: rzpOrder.amount,
+                              currency: "INR",
+                              name: "Chanchal",
+                              description: "Order Payment",
+                              order_id: rzpOrder.externalOrderId,
+                              callback_url: "http://localhost:8081/api/v1/payment/callback"
+                            };
 
                 const razorpay = new Razorpay(options);
                 razorpay.open();

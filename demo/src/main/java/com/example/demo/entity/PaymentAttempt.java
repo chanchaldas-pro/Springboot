@@ -26,11 +26,21 @@ public class PaymentAttempt {
 
     private boolean success;
 
+    private String externalOrderId;
+
+    private String externalPaymentId;
+
     // Getters & Setters
 
     public void setPayment(Payment payment){
         this.payment=payment;
     }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+
 
     public void setProviderResponse(String response){
         this.providerResponse=response;
@@ -38,5 +48,22 @@ public class PaymentAttempt {
 
     public void setSuccess(boolean success){
         this.success=success;
+    }
+
+    public String getExternalOrderId(){
+        return externalOrderId;
+    }
+
+
+    public void setExternalOrderId(String externalOrderId){
+        this.externalOrderId=externalOrderId;
+    }
+
+    public void setExternalPaymentId(String externalPaymentId){
+        this.externalPaymentId=externalPaymentId;
+    }
+
+    public String getExternalPaymentId(){
+        return this.externalPaymentId;
     }
 }

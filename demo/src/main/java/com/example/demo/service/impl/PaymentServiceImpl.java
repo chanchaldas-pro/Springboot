@@ -1,6 +1,5 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.client.PaymentClient;
 import com.example.demo.dto.PaymentInitiateRequest;
 import com.example.demo.dto.PaymentInitiateResponse;
 import com.example.demo.entity.*;
@@ -8,143 +7,112 @@ import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.PaymentAttemptRepository;
 import com.example.demo.repository.PaymentRepository;
 import com.example.demo.service.PaymentService;
-import com.razorpay.RazorpayException;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.FluentQuery;
+
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+
+import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-
-
-
-
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final PaymentAttemptRepository attemptRepository;
-    private final PaymentClient paymentClient;
-    private final OrderRepository orderRepository;
     private final PaymentAttemptRepository paymentAttemptRepository;
+    private final OrderRepository orderRepository;
+    private final WebClient razorpayWebClient;
 
+    @Override
     @Transactional
     public PaymentInitiateResponse initiatePayment(Long orderId) {
 
-        // 1. Fetch order
+        // 1️⃣ Fetch Order
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
-        // 2. Block already paid orders
         if (order.getStatus() == OrderStatus.COMPLETED) {
             throw new IllegalStateException("Order already paid");
         }
 
-        Customer customer = order.getCustomer();
-        String email = customer.getEmail();
+        // 2️⃣ Find or Create Payment (ONLY ONCE PER ORDER)
+        Payment payment = paymentRepository.findByOrder(order)
+                .orElseGet(() -> {
+                    Payment p = new Payment();
+                    p.setOrder(order);
+                    p.setAmount(order.getTotalAmount());
+                    p.setStatus(PaymentStatus.PENDING);
+                    return paymentRepository.save(p);
+                });
 
-        // 3. Fetch payment if exists
-        Payment payment = paymentRepository.findByOrder(order).orElse(null);
-
-        // 4. ALWAYS create payment attempt (later)
-        PaymentAttempt attempt = new PaymentAttempt();
-
-        // 5. If payment exists and NOT successful → reuse Razorpay order
-        if (payment != null && payment.getStatus() != PaymentStatus.SUCCESS) {
-
-            PaymentInitiateResponse response = new PaymentInitiateResponse();
-            response.setExternalOrderId(order.getExternalOrderId());
-            response.setAmount(convertToPaise(order.getTotalAmount()));
-
-
-            attempt.setPayment(payment);
-            attempt.setSuccess(false);
-            attempt.setProviderResponse("Reused existing Razorpay order");
-
-            paymentAttemptRepository.save(attempt);
-
-            return response;
-        }
-
-        // 6. If payment does NOT exist → create payment
-        if (payment == null) {
-            payment = createPayment(order);
-        }
-
-        try {
-            // 7. Create Razorpay order
-            PaymentInitiateResponse response =
-                    paymentClient.initiatePayment(buildRequest(order, email));
-
-            // 8. Save Razorpay order id in Order
-            order.setExternalOrderId(response.getExternalOrderId());
-            orderRepository.save(order);
-
-            // 9. Update payment
-            payment.setStatus(PaymentStatus.INITIATED);
-            paymentRepository.save(payment);
-
-            // 10. Save payment attempt
-            attempt.setPayment(payment);
-            attempt.setSuccess(false);
-            attempt.setProviderResponse("Razorpay order created");
-
-            paymentAttemptRepository.save(attempt);
-
-            return response;
-
-        } catch (Exception ex) {
-
-            // 11. Save failed attempt
-            attempt.setPayment(payment);
-            attempt.setSuccess(false);
-            attempt.setProviderResponse(ex.getMessage());
-
-            paymentAttemptRepository.save(attempt);
-
-
-        }
-        return null;
-    }
-
-
-    private int convertToPaise(BigDecimal amount) {
-        return amount.multiply(BigDecimal.valueOf(100)).intValueExact();
-    }
-
-    private Payment createPayment(Order order) {
-        Payment payment = new Payment();
-        payment.setOrder(order);
-        payment.setAmount(order.getTotalAmount());
-        return paymentRepository.save(payment);
-    }
-
-    private void saveAttempt(Payment payment, String response, boolean success) {
+        // 3️⃣ ALWAYS create PaymentAttempt
         PaymentAttempt attempt = new PaymentAttempt();
         attempt.setPayment(payment);
-        attempt.setProviderResponse(response);
-        attempt.setSuccess(success);
-        attemptRepository.save(attempt);
+        attempt.setSuccess(false);
+        attempt.setPayment(payment);
+        paymentAttemptRepository.save(attempt);
+
+        // 4️⃣ Convert amount to paise
+        BigDecimal amountInPaise = order.getTotalAmount()
+                .multiply(BigDecimal.valueOf(100));
+
+        // 5️⃣ Build Razorpay Order Request
+        Map<String, Object> razorpayRequest = new HashMap<>();
+        razorpayRequest.put("amount", amountInPaise.intValueExact());
+        razorpayRequest.put("currency", "INR");
+        razorpayRequest.put("receipt", order.getId().toString());
+        razorpayRequest.put("payment_capture", 1);
+
+        // 6️⃣ Create Razorpay Order
+        Map<String, Object> razorpayResponse =
+                razorpayWebClient.post()
+                        .uri("/orders")
+                        .bodyValue(razorpayRequest)
+                        .retrieve()
+                        .onStatus(HttpStatusCode::is4xxClientError,
+                                res -> Mono.error(new RuntimeException("Invalid payment request")))
+                        .onStatus(HttpStatusCode::is5xxServerError,
+                                res -> Mono.error(new RuntimeException("Razorpay server error")))
+                        .bodyToMono(Map.class)
+                        .retryWhen(Retry.fixedDelay(2, Duration.ofMillis(500)))
+                        .block();
+
+        String externalOrderId = (String) razorpayResponse.get("id");
+
+        // 7️⃣ Attach Razorpay Order ID to Attempt
+        attempt.setExternalOrderId(externalOrderId);
+        attempt.setProviderResponse("Payment initiated");
+        paymentAttemptRepository.save(attempt);
+
+
+
+        // 9️⃣ Response to Frontend
+        PaymentInitiateResponse response = new PaymentInitiateResponse();
+        response.setExternalOrderId(externalOrderId);
+        response.setAmount(amountInPaise.intValueExact());
+
+
+        return response;
     }
 
-    private PaymentInitiateRequest buildRequest(Order order,String email) {
-        PaymentInitiateRequest request = new PaymentInitiateRequest();
-        request.setOrderId(order.getId());
-        request.setAmount(order.getTotalAmount());
-        request.setEmail(email);
-        request.setCallbackUrl("https://yourapp.com/payments/callback");
-        return request;
+
+    // ✅ Retry only for network / timeout issues
+    private boolean isRetryableError(Throwable ex) {
+        return ex instanceof WebClientRequestException
+                || ex instanceof TimeoutException;
     }
+
+
 }
-
