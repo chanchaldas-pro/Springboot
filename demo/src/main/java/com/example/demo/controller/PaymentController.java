@@ -34,10 +34,8 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
-    @Value("${razorpay.key.id}")
-    private String razorpayKeyId;
-    @Value("${razorpay.key.secret}")
-    private String razorpayKeySecret;
+
+
 
     @PostMapping("/{orderId}/initiate")
     public ResponseEntity<PaymentInitiateResponse> initiatePayment(@PathVariable Long orderId) {

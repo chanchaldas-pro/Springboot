@@ -6,12 +6,14 @@ import com.example.demo.entity.Customer;
 import com.example.demo.dto.CustomerLoginRequest;
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.service.CustomerService;
+import jakarta.annotation.security.DenyAll;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+@Data
 @RestController
 @RequestMapping("/api/v1/customer")
 public class CustomerController {
