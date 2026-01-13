@@ -15,12 +15,18 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.demo.entity.CustomerRole;
 import com.example.demo.exception.BadRequestException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -40,38 +46,38 @@ public class CustomerServiceImpl implements CustomerService {
         if (request.getEmail() == null || request.getEmail().isBlank() ||
                 request.getPassword() == null || request.getPassword().isBlank()) {
 
-            throw new BadRequestException("Email and Password cannot be empty");
+            throw new BadRequestException("BAD_REQUEST","Email and Password cannot be empty");
         }
 
         // Name check
         if ( request.name.isBlank()) {
-            throw new BadRequestException("Name cannot be empty");
+           throw new BadRequestException("BAD_REQUEST","name can not be empty");
         }
 
         // Address blank check (null ok, blank not ok)
         if (request.address != null && request.address.isBlank()) {
-            throw new BadRequestException("Address cannot be blank");
+            throw new BadRequestException("BAD_REQUEST","Address cannot be blank");
         }
 
         // -----------------------------
         // 2. Validate email format
         // -----------------------------
         if (!request.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            throw new BadRequestException("Invalid email format");
+            throw new BadRequestException("BAD_REQUEST","Invalid email format");
         }
 
         // -----------------------------
         // 3. Check if email already exists
         // -----------------------------
         if (customerRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new BadRequestException("Email already registered!");
+            throw new BadRequestException("BAD_REQUEST","Email already registered!");
         }
 
         // -----------------------------
         // 4. Validate password strength
         // -----------------------------
         if (request.getPassword().length() <= 6) {
-            throw new BadRequestException("Password must be greater than 6 characters");
+            throw new BadRequestException("BAD_REQUEST","Password must be greater than 6 characters");
         }
 
         // -----------------------------
@@ -81,14 +87,14 @@ public class CustomerServiceImpl implements CustomerService {
                 request.getCustomerRole() != CustomerRole.ADMIN &&
                 request.getCustomerRole() != CustomerRole.USER) {
 
-            throw new BadRequestException("Invalid role! Allowed: ADMIN, USER");
+            throw new BadRequestException("BAD_REQUEST","Invalid role! Allowed: ADMIN, USER");
         }
 
         // -----------------------------
         // 6. Validate phone (only if provided)
         // -----------------------------
         if (request.phone != null && !request.phone.matches("\\d{10}")) {
-            throw new BadRequestException("Phone number must be 10 digits");
+            throw new BadRequestException("BAD_REQUEST","Phone number must be 10 digits");
         }
 
 
@@ -124,10 +130,6 @@ public class CustomerServiceImpl implements CustomerService {
         return resp;
     }
 
-
-
-
-
     @Override
     public AuthResponse login(CustomerLoginRequest request) {
 
@@ -137,27 +139,27 @@ public class CustomerServiceImpl implements CustomerService {
         if (request.email == null || request.email.isBlank() ||
                 request.getPassword() == null || request.getPassword().isBlank()) {
 
-            throw new BadRequestException("Email and Password cannot be empty");
+            throw new BadRequestException("BAD_REQUEST","Email and Password cannot be empty");
         }
 
         // -----------------------------
         // 2. Validate email format
         // -----------------------------
         if (!request.email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            throw new BadRequestException("Invalid email format");
+            throw new BadRequestException("BAD_REQUEST","Invalid email format");
         }
 
         // -----------------------------
         // 3. Find user
         // -----------------------------
         Customer customer = customerRepository.findByEmail(request.email)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+                .orElseThrow(() -> new NotFoundException("NOT_FOUND","User not found"));
 
         // -----------------------------
         // 4. Validate password
         // -----------------------------
         if (!passwordEncoder.matches(request.getPassword(), customer.getPassword())) {
-            throw new UnauthorizedException("Invalid password");
+            throw new UnauthorizedException("UNAUTHORIZED","Invalid password");
         }
 
         // -----------------------------
@@ -188,7 +190,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Customer getCustomerByEmail(String email) {
         return customerRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Customer not found"));
+                .orElseThrow(() -> new NotFoundException("NOT_FOUND","Customer not found"));
     }
 
     public Void logout(HttpServletResponse response) {
@@ -206,6 +208,8 @@ public class CustomerServiceImpl implements CustomerService {
         response.addCookie(cookie);
         return null;
     }
+
+
 
 
 }

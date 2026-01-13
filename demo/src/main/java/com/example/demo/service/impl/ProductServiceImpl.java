@@ -47,7 +47,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+                .orElseThrow(() -> new NotFoundException("NOT_FOUND","Product not found: " + id));
 
         return mapToResponse(product);
     }
@@ -59,7 +59,7 @@ public class ProductServiceImpl implements ProductService {
 
             // (Optional) business validation: ensure customer exists
             Customer customer = customerRepository.findByCustomerUuid(customerUuid)
-                    .orElseThrow(() -> new NotFoundException("Customer not found"));
+                    .orElseThrow(() -> new NotFoundException("NOT_FOUND","Customer not found"));
 
             // Business logic only
             Product product = new Product();

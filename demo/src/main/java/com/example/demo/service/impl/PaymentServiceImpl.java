@@ -3,6 +3,9 @@ package com.example.demo.service.impl;
 import com.example.demo.dto.PaymentInitiateRequest;
 import com.example.demo.dto.PaymentInitiateResponse;
 import com.example.demo.entity.*;
+import com.example.demo.exception.BadRequestException;
+import com.example.demo.exception.ExternalServiceException;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.PaymentAttemptRepository;
 import com.example.demo.repository.PaymentRepository;
@@ -42,10 +45,10 @@ public class PaymentServiceImpl implements PaymentService {
         // 1️⃣ Fetch Order
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+                .orElseThrow(() -> new NotFoundException("NOT_FOUND","Order not found"));
 
         if (order.getStatus() == OrderStatus.COMPLETED) {
-            throw new IllegalStateException("Order already paid");
+            throw new BadRequestException("ORDER_PAID","Order already paid");
         }
 
         // 2️⃣ Find or Create Payment (ONLY ONCE PER ORDER)
@@ -83,9 +86,9 @@ public class PaymentServiceImpl implements PaymentService {
                         .bodyValue(razorpayRequest)
                         .retrieve()
                         .onStatus(HttpStatusCode::is4xxClientError,
-                                res -> Mono.error(new RuntimeException("Invalid payment request")))
+                                res -> Mono.error(new BadRequestException("RAZORPAY_4XX", "Invalid payment request")))
                         .onStatus(HttpStatusCode::is5xxServerError,
-                                res -> Mono.error(new RuntimeException("Razorpay server error")))
+                                res -> Mono.error(new ExternalServiceException("RAZORPAY_DOWN", "Razorpay is unavailable")))
                         .bodyToMono(Map.class)
                         .retryWhen(Retry.fixedDelay(2, Duration.ofMillis(500)))
                         .block();

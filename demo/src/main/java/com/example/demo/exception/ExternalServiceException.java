@@ -1,17 +1,14 @@
 package com.example.demo.exception;
 
-public class UnauthorizedException extends RuntimeException {
-
+public class ExternalServiceException extends RuntimeException{
     private String errorCode;
-    public UnauthorizedException(String message,String errorCode) {
+
+    public ExternalServiceException(String message,String errorCode){
         super(message);
         this.errorCode=errorCode;
     }
 
     public String getErrorCode(){
-        return  this.errorCode;
+        return this.errorCode;
     }
-
-
 }
-

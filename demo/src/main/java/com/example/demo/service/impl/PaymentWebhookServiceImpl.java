@@ -1,6 +1,8 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.entity.*;
+import com.example.demo.exception.BadRequestException;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.PaymentAttemptRepository;
 import com.example.demo.repository.PaymentRepository;
@@ -57,7 +59,7 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
             // 3️⃣ Fetch PaymentAttempt
             PaymentAttempt attempt =
                     paymentAttemptRepository.findByExternalOrderId(razorpayOrderId)
-                            .orElseThrow(() -> new RuntimeException("PaymentAttempt not found"));
+                            .orElseThrow(() -> new NotFoundException("NOT_FOUND","PaymentAttempt not found"));
 
             Payment payment = attempt.getPayment();
             Order order = payment.getOrder();
@@ -94,7 +96,7 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
             orderRepository.save(order);
 
         } catch (Exception e) {
-            throw new RuntimeException("Webhook processing failed", e);
+            throw new BadRequestException("WEBHOOK_ERROR","Webhook processing failed");
         }
     }
 
@@ -104,7 +106,7 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
             String payload = new String(rawPayload, StandardCharsets.UTF_8);
             Utils.verifyWebhookSignature(payload, razorpaySignature, webhookSecret);
         } catch (Exception e) {
-            throw new SecurityException("Invalid Razorpay webhook signature");
+            throw new BadRequestException("RAZORPAY_SECURITY_EXCEPTION","Invalid Razorpay webhook signature");
         }
     }
 

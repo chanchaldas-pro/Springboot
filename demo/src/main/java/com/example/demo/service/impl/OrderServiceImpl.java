@@ -42,14 +42,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
 
     public OrderResponse createOrder(CreateOrderRequest request,String customerUuid) {
-
-
         // 3. Fetch customer from DB
-
         Customer customer = customerRepository.findByCustomerUuid(customerUuid)
-                .orElseThrow(() -> new NotFoundException("Customer not found"));
-
-
+                .orElseThrow(() -> new NotFoundException("NOT_FOUND","Customer not found"));
 
         // 2️⃣ Create Order
         Order order = new Order();
@@ -59,7 +54,7 @@ public class OrderServiceImpl implements OrderService {
         var orderItems = request.getItems().stream().map(itemDto -> {
 
             Product product = productRepository.findById(itemDto.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + itemDto.getProductId()));
+                    .orElseThrow(() -> new NotFoundException("NOT_FOUND","Product not found: " + itemDto.getProductId()));
 
             OrderItem item = new OrderItem();
             item.setOrder(order);
@@ -69,7 +64,7 @@ public class OrderServiceImpl implements OrderService {
 
             int NetStock =product.getStock()-itemDto.getQuantity();
             if(NetStock<0){
-                throw new BadRequestException("Order Quantity can not greater than Product in Stock");
+                throw new BadRequestException("BAD_REQUEST","Order Quantity can not greater than Product in Stock");
             }
 
             product.setStock(NetStock);
@@ -98,7 +93,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse getOrderById(Long id) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+                .orElseThrow(() -> new NotFoundException("NOT_FOUND","Order not found: " + id));
 
         return convertToResponse(order);
     }
