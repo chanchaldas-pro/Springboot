@@ -31,8 +31,8 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
-   @Autowired
-    private  CustomerRepository customerRepository;
+
+    private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 

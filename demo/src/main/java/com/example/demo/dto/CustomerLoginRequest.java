@@ -11,6 +11,10 @@ public class CustomerLoginRequest {
         return this.password;
     }
 
+    public void setPassword(String password){
+        this.password=password;
+    }
+
     public CustomerRole getRole(){
         return this.role;
     }

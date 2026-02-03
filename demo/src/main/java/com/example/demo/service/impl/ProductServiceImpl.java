@@ -30,8 +30,6 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private CustomerRepository customerRepository;
 
-
-
     public ProductServiceImpl(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
@@ -53,9 +51,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-
-
-        public ProductResponse createProduct(ProductRequest request, String customerUuid) {
+    public ProductResponse createProduct(ProductRequest request, String customerUuid) {
 
             // (Optional) business validation: ensure customer exists
             Customer customer = customerRepository.findByCustomerUuid(customerUuid)
