@@ -72,16 +72,41 @@ class PaymentServiceImplTest {
                 "id", "rzp_order_123"
         );
 
-        when(razorpayWebClient.post()
-                .uri("/orders")
-                .bodyValue(any())
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block())
-                .thenReturn(razorpayResponse);
+        // ---- FIXED WebClient mocking chain ----
+
+        WebClient.RequestBodyUriSpec requestBodyUriSpec =
+                mock(WebClient.RequestBodyUriSpec.class);
+
+        WebClient.RequestBodySpec requestBodySpec =
+                mock(WebClient.RequestBodySpec.class);
+
+        WebClient.RequestHeadersSpec requestHeadersSpec =
+                mock(WebClient.RequestHeadersSpec.class);
+
+        WebClient.ResponseSpec responseSpec =
+                mock(WebClient.ResponseSpec.class);
+
+        when(razorpayWebClient.post())
+                .thenReturn(requestBodyUriSpec);
+
+        when(requestBodyUriSpec.uri("/orders"))
+                .thenReturn(requestBodySpec);
+
+        when(requestBodySpec.bodyValue(any()))
+                .thenReturn(requestHeadersSpec);
+
+        when(requestHeadersSpec.retrieve())
+                .thenReturn(responseSpec);
+
+        when(responseSpec.bodyToMono(Map.class))
+                .thenReturn(Mono.just(razorpayResponse));
+
+        // ---- Call service ----
 
         PaymentInitiateResponse response =
                 paymentService.initiatePayment(1L);
+
+        // ---- Assertions ----
 
         assertEquals("rzp_order_123", response.getExternalOrderId());
         assertEquals(50000, response.getAmount()); // paise
@@ -89,6 +114,7 @@ class PaymentServiceImplTest {
         verify(paymentAttemptRepository, times(2))
                 .save(any(PaymentAttempt.class));
     }
+
 
     // ---------------------------
     // ORDER NOT FOUND

@@ -34,12 +34,13 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/customer/login", "/api/v1/customer/signup","/api/v1/payment/**","/api/webhook/payment").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/products","/api/v1/product/**","/api/v1/payment/callback").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products","/api/v1/product/**","/api/v1/payment/callback","/.well-known/appspecific/com.chrome.devtools.json","/v3/api-docs/**").permitAll()
                         .requestMatchers(
                                 "/",
                                 "/checkout.html",
                                 "/success.html",
                                 "/failure.html",
+                                "/swagger-ui/**",
                                 "/static/**",
                                 "/css/**",
                                 "/js/**",

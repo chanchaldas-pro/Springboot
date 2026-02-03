@@ -54,6 +54,9 @@ public class PaymentAttempt {
         return externalOrderId;
     }
 
+    public boolean isSuccess(){
+        return success;
+    }
 
     public void setExternalOrderId(String externalOrderId){
         this.externalOrderId=externalOrderId;
