@@ -65,6 +65,7 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/api/v1/order/*"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()// 👈 ADD THIS
                         .anyRequest().authenticated()
                 )
 
